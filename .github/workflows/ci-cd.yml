@@ -8,6 +8,43 @@ on:
   schedule:
     # Run daily at 2 AM UTC for regression testing
     - cron: '0 2 * * *'
+  workflow_dispatch:
+    inputs:
+      test_type:
+        description: 'Type of tests to run'
+        required: false
+        default: 'all'
+        type: choice
+        options:
+          - all
+          - unit
+          - integration
+          - security
+          - schemathesis
+      python_version:
+        description: 'Python version to use'
+        required: false
+        default: '3.9'
+        type: choice
+        options:
+          - '3.8'
+          - '3.9'
+          - '3.10'
+      run_integration:
+        description: 'Run integration tests'
+        required: false
+        default: true
+        type: boolean
+      run_metrics:
+        description: 'Generate metrics dashboard'
+        required: false
+        default: true
+        type: boolean
+      run_security_scan:
+        description: 'Run security scan'
+        required: false
+        default: true
+        type: boolean
 
 env:
   PYTHON_VERSION: '3.9'
@@ -18,8 +55,8 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [3.8, 3.9, '3.10']
-        test-type: [unit, integration, security, schemathesis]
+        python-version: ${{ github.event.inputs.python_version || '[3.8, 3.9, "3.10"]' }}
+        test-type: ${{ github.event.inputs.test_type == 'all' && '[unit, integration, security, schemathesis]' || github.event.inputs.test_type || '[unit, integration, security, schemathesis]' }}
     
     steps:
     - name: Checkout code
@@ -93,7 +130,7 @@ jobs:
           --report-format=json
           
     - name: Upload test reports
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: test-reports-${{ matrix.test-type }}-${{ matrix.python-version }}
         path: |
@@ -103,7 +140,7 @@ jobs:
   integration:
     runs-on: ubuntu-latest
     needs: test
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: (github.event_name == 'push' && github.ref == 'refs/heads/main') || (github.event_name == 'workflow_dispatch' && github.event.inputs.run_integration == 'true')
     
     steps:
     - name: Checkout code
@@ -136,7 +173,7 @@ jobs:
   metrics:
     runs-on: ubuntu-latest
     needs: [test, integration]
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: (github.event_name == 'push' && github.ref == 'refs/heads/main') || (github.event_name == 'workflow_dispatch' && github.event.inputs.run_metrics == 'true')
     
     steps:
     - name: Checkout code
@@ -162,6 +199,7 @@ jobs:
   security-scan:
     runs-on: ubuntu-latest
     needs: test
+    if: (github.event_name == 'push') || (github.event_name == 'workflow_dispatch' && github.event.inputs.run_security_scan == 'true')
     
     steps:
     - name: Checkout code

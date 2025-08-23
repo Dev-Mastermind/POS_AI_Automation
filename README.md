@@ -37,15 +37,10 @@ A comprehensive Proof of Concept demonstrating fast automation setup, practical 
    ```bash
    # Install all dependencies
    pip install -r requirements.txt
-   
-   # Or install minimal dependencies for Python 3.13
-   pip install -r requirements-minimal.txt
-   ```
 
 4. **Verify installation**
    ```bash
    python -m pytest --version
-   python -c "import matplotlib, seaborn, plotly; print('All packages imported successfully!')"
    ```
 
 ## 🧪 Running Tests
