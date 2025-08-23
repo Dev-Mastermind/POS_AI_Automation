@@ -55,8 +55,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ${{ github.event.inputs.python_version || '[3.8, 3.9, "3.10"]' }}
-        test-type: ${{ github.event.inputs.test_type == 'all' && '[unit, integration, security, schemathesis]' || github.event.inputs.test_type || '[unit, integration, security, schemathesis]' }}
+        python-version: [3.8, 3.9, '3.10']
     
     steps:
     - name: Checkout code
@@ -89,50 +88,50 @@ jobs:
     - name: Create reports directory
       run: mkdir -p reports
       
-    - name: Run PyTest tests
-      if: matrix.test-type == 'unit'
+    - name: Run Unit Tests
+      if: (github.event.inputs.test_type == 'all' || github.event.inputs.test_type == 'unit' || !github.event.inputs.test_type) && matrix.python-version == (github.event.inputs.python_version || '3.9')
       run: |
-        pytest tests/ -m "not schemathesis" \
-          --html=reports/report_${{ matrix.test-type }}.html \
+        pytest tests/ -m "not schemathesis and not integration" \
+          --html=reports/report_unit_${{ matrix.python-version }}.html \
           --self-contained-html \
-          --json-report=reports/report_${{ matrix.test-type }}.json \
+          --json-report=reports/report_unit_${{ matrix.python-version }}.json \
           --cov=tests \
-          --cov-report=html:reports/coverage_${{ matrix.test-type }} \
+          --cov-report=html:reports/coverage_unit_${{ matrix.python-version }} \
           --cov-report=term-missing \
           -v
           
-    - name: Run Security tests
-      if: matrix.test-type == 'security'
+    - name: Run Security Tests
+      if: (github.event.inputs.test_type == 'all' || github.event.inputs.test_type == 'security' || !github.event.inputs.test_type) && matrix.python-version == (github.event.inputs.python_version || '3.9')
       run: |
         pytest tests/test_security.py \
-          --html=reports/report_${{ matrix.test-type }}.html \
+          --html=reports/report_security_${{ matrix.python-version }}.html \
           --self-contained-html \
-          --json-report=reports/report_${{ matrix.test-type }}.json \
+          --json-report=reports/report_security_${{ matrix.python-version }}.json \
           -v
           
-    - name: Run Schemathesis tests
-      if: matrix.test-type == 'schemathesis'
+    - name: Run Schemathesis Tests
+      if: (github.event.inputs.test_type == 'all' || github.event.inputs.test_type == 'schemathesis' || !github.event.inputs.test_type) && matrix.python-version == (github.event.inputs.python_version || '3.9')
       run: |
         pytest tests/test_schemathesis.py \
-          --html=reports/report_${{ matrix.test-type }}.html \
+          --html=reports/report_schemathesis_${{ matrix.python-version }}.html \
           --self-contained-html \
-          --json-report=reports/report_${{ matrix.test-type }}.json \
+          --json-report=reports/report_schemathesis_${{ matrix.python-version }}.json \
           -v
           
     - name: Run Schemathesis against OpenAPI spec
-      if: matrix.test-type == 'schemathesis'
+      if: (github.event.inputs.test_type == 'all' || github.event.inputs.test_type == 'schemathesis' || !github.event.inputs.test_type) && matrix.python-version == (github.event.inputs.python_version || '3.9')
       run: |
         schemathesis run openapi_spec.yaml \
           --checks all \
           --max-response-time 5000 \
           --hypothesis-max-examples 10 \
-          --report=reports/schemathesis_report.json \
+          --report=reports/schemathesis_report_${{ matrix.python-version }}.json \
           --report-format=json
           
     - name: Upload test reports
       uses: actions/upload-artifact@v4
       with:
-        name: test-reports-${{ matrix.test-type }}-${{ matrix.python-version }}
+        name: test-reports-${{ matrix.python-version }}
         path: |
           reports/
         retention-days: 30
@@ -182,7 +181,7 @@ jobs:
     - name: Download test reports
       uses: actions/download-artifact@v3
       with:
-        name: test-reports-unit-3.9
+        name: test-reports-3.9
         path: reports/
         
     - name: Generate metrics dashboard
