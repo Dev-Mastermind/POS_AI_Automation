@@ -53,28 +53,34 @@ jobs:
         pytest tests/ -m "not schemathesis and not integration" \
           --html=reports/report_unit.html \
           --self-contained-html \
-          --json-report=reports/report_unit.json \
+          --json-report \
+          --json-report-file=reports/report_unit.json \
+          --junitxml=reports/junit_unit.xml \
           --cov=tests \
           --cov-report=html:reports/coverage_unit \
           --cov-report=term-missing \
           -v
-          
+
     - name: Run Security Tests
       run: |
         pytest tests/test_security.py \
           --html=reports/report_security.html \
           --self-contained-html \
-          --json-report=reports/report_security.json \
+          --json-report \
+          --json-report-file=reports/report_security.json \
+          --junitxml=reports/junit_security.xml \
           -v
-          
+
     - name: Run Schemathesis Tests
       run: |
         pytest tests/test_schemathesis.py \
           --html=reports/report_schemathesis.html \
           --self-contained-html \
-          --json-report=reports/report_schemathesis.json \
+          --json-report \
+          --json-report-file=reports/report_schemathesis.json \
+          --junitxml=reports/junit_schemathesis.xml \
           -v
-        
+
     - name: Run Schemathesis against OpenAPI spec
       run: |
         schemathesis run openapi_spec.yaml \
@@ -83,7 +89,7 @@ jobs:
           --hypothesis-max-examples 10 \
           --report=reports/schemathesis_report.json \
           --report-format=json
-          
+      
     - name: Upload test reports
       uses: actions/upload-artifact@v4
       with:
@@ -109,17 +115,22 @@ jobs:
     - name: Install dependencies
       run: |
         pip install -r requirements.txt
+
+    - name: Create reports directory
+      run: mkdir -p reports
         
     - name: Run integration tests
       run: |
         pytest tests/ -m integration \
           --html=reports/integration_report.html \
           --self-contained-html \
-          --json-report=reports/integration_report.json \
+          --json-report \
+          --json-report-file=reports/integration_report.json \
+          --junitxml=reports/junit_integration.xml \
           -v
-          
+  
     - name: Upload integration reports
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: integration-reports
         path: reports/
@@ -159,14 +170,17 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
       
+    - name: Create reports directory
+      run: mkdir -p reports
+
     - name: Run security scan
       run: |
         pip install bandit safety
         bandit -r tests/ -f json -o reports/bandit_report.json || true
         safety check --json --output reports/safety_report.json || true
-        
+
     - name: Upload security reports
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: security-reports
         path: reports/
