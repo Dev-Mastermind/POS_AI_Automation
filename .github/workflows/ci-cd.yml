@@ -81,6 +81,13 @@ jobs:
           --junitxml=reports/junit_schemathesis.xml \
           -v
 
+    - name: DNS sanity check
+      run: |
+        sudo apt-get update && sudo apt-get install -y dnsutils iputils-ping
+        dig +short api.hanwha-vision.com || true
+        nslookup api.hanwha-vision.com || true
+        ping -c 1 api.hanwha-vision.com || true
+        
     - name: Run Schemathesis against OpenAPI spec
       run: |
         schemathesis run openapi_spec.yaml \
