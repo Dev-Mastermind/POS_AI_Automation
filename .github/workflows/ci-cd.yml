@@ -147,7 +147,7 @@ jobs:
         python scripts/generate_metrics.py
         
     - name: Upload metrics dashboard
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: metrics-dashboard
         path: reports/metrics/
