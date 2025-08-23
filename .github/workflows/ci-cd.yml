@@ -91,7 +91,7 @@ jobs:
     - name: Run Schemathesis against OpenAPI spec
       run: |
         schemathesis run openapi_spec.yaml \
-          --url "https://api.hanwha-vision.com" \
+          --url "http://127.0.0.1:4010" \
           --checks all \
           --max-response-time 5 \
           --max-examples 10 \
