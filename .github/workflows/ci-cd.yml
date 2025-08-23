@@ -84,11 +84,14 @@ jobs:
     - name: Run Schemathesis against OpenAPI spec
       run: |
         schemathesis run openapi_spec.yaml \
+          --url "https://your-api-base.example.com" \
           --checks all \
-          --max-response-time 5000 \
+          --max-response-time 5 \
           --max-examples 10 \
-          --report=reports/schemathesis_report.json \
-          --report-format=json
+          --report junit,har \
+          --report-dir reports/schemathesis \
+          --report-junit-path reports/schemathesis/junit.xml \
+          --report-har-path reports/schemathesis/traffic.har
       
     - name: Upload test reports
       uses: actions/upload-artifact@v4
