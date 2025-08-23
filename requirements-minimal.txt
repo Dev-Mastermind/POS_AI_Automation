@@ -1,0 +1,24 @@
+# Minimal requirements for Python 3.13 compatibility
+# Core Testing Framework
+pytest>=8.0.0
+pytest-html>=4.1.1
+pytest-cov>=4.1.0
+
+# API Testing & Validation
+requests>=2.31.0
+jsonschema>=4.20.0
+
+# Data Generation & Fuzzing
+faker>=20.1.0
+
+# Reporting & Metrics
+matplotlib>=3.8.0
+
+# Utilities
+python-dotenv>=1.0.0
+pyyaml>=6.0.1
+colorama>=0.4.6
+
+# Development Tools
+black>=23.11.0
+flake8>=6.1.0
