@@ -80,25 +80,6 @@ jobs:
           --json-report-file=reports/report_schemathesis.json \
           --junitxml=reports/junit_schemathesis.xml \
           -v
-
-    - name: DNS sanity check
-      run: |
-        sudo apt-get update && sudo apt-get install -y dnsutils iputils-ping
-        dig +short api.hanwha-vision.com || true
-        nslookup api.hanwha-vision.com || true
-        ping -c 1 api.hanwha-vision.com || true
-        
-    - name: Run Schemathesis against OpenAPI spec
-      run: |
-        schemathesis run openapi_spec.yaml \
-          --url "http://127.0.0.1:4010" \
-          --checks all \
-          --max-response-time 5 \
-          --max-examples 10 \
-          --report junit,har \
-          --report-dir reports/schemathesis \
-          --report-junit-path reports/schemathesis/junit.xml \
-          --report-har-path reports/schemathesis/traffic.har
       
     - name: Upload test reports
       uses: actions/upload-artifact@v4
